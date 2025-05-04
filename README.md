@@ -1,5 +1,6 @@
 # bofArgue
 05/04/2025 - Added edgecase where you dont want the program to start with any fake arguments, and instead have no arguments on start and while running
+
 03/10/2025 - Reuploaded. Fix issue with arguments not terminating and tool behaving incorrectly
 
 # Background
