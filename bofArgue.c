@@ -14,11 +14,12 @@ DECLSPEC_IMPORT BOOL WINAPI KERNEL32$ReadProcessMemory (HANDLE, LPCVOID, LPVOID,
 DECLSPEC_IMPORT BOOL WINAPI KERNEL32$WriteProcessMemory (HANDLE, LPVOID, LPCVOID, SIZE_T, SIZE_T *);
 DECLSPEC_IMPORT BOOL WINAPI KERNEL32$CreateProcessA (LPCSTR, LPSTR, LPSECURITY_ATTRIBUTES, LPSECURITY_ATTRIBUTES, WINBOOL, DWORD, LPVOID, LPCSTR, LPSTARTUPINFOA, LPPROCESS_INFORMATION);
 DECLSPEC_IMPORT DWORD WINAPI KERNEL32$ResumeThread (HANDLE);
-WINBASEAPI int __cdecl MSVCRT$swprintf(wchar_t *restrict, size_t, const wchar_t *restrict _Format,...);
+WINBASEAPI int __cdecl MSVCRT$swprintf(wchar_t *restrict, size_t, const wchar_t *restrict,...);
 WINBASEAPI int __cdecl MSVCRT$printf(const char *restrict _Format,...);
 WINBASEAPI VOID*__cdecl MSVCRT$malloc(size_t _Size);
 WINBASEAPI VOID*__cdecl MSVCRT$free(void *_Memory);
 WINBASEAPI size_t __cdecl MSVCRT$strlen(const char *_Str);
+WINBASEAPI int __cdecl MSVCRT$strcmp(const char *, const char *);
 WINBASEAPI VOID* __cdecl MSVCRT$memset(void *_Dst,int _Val,size_t _Size);
 //This Function is to stop an error from occuring. Couldn't figure out another way around it for now
 void ___chkstk_ms(void);
@@ -86,9 +87,15 @@ int go(char * args, int alen)
 		printHelp();
 		return 1;
 	}
-	
 	int argLen1 = 0;
-	argLen1 = MSVCRT$strlen(binPth)+MSVCRT$strlen(fArg)+2;
+	int emptyArgs = 1;
+	//Checks for empty arguments
+	if (MSVCRT$strcmp(fArg, "") == 0 || MSVCRT$strcmp(fArg, " ") == 0 || MSVCRT$strcmp(fArg,"\"\"") == 0){		
+		argLen1 = MSVCRT$strlen(binPth);
+		emptyArgs = 0;
+	}else{
+		argLen1 = MSVCRT$strlen(binPth)+MSVCRT$strlen(fArg)+2;
+	}
 	char * cliArg1;
 	cliArg1 = (char *)MSVCRT$malloc(argLen1);
 	int argLen2 = 0;
@@ -104,11 +111,17 @@ int go(char * args, int alen)
 		cliArg2[i] = binPth[i];
 	}
 	//Adding a space between the binpath and the fake&real arguments
-	cliArg1[MSVCRT$strlen(binPth)] = ' ';
+	if (emptyArgs == 1){
+		cliArg1[MSVCRT$strlen(binPth)] = ' ';
+	}else{
+		cliArg1[MSVCRT$strlen(binPth)] = '\0';
+	}
 	cliArg2[MSVCRT$strlen(binPth)] = ' ';
 	//creating the fake argument command and the real argument command lines
-	for (int i=0;i<=MSVCRT$strlen(fArg);i++){//<= used to include the \0 char to terminate the string. Or else it grabs weird chars from APPDATA
-		cliArg1[i+MSVCRT$strlen(binPth)+1] = fArg[i];
+	if (emptyArgs == 1){
+		for (int i=0;i<=MSVCRT$strlen(fArg);i++){//<= used to include the \0 char to terminate the string. Or else it grabs weird chars from APPDATA
+			cliArg1[i+MSVCRT$strlen(binPth)+1] = fArg[i];
+		}
 	}
 	for (int i=0;i<=MSVCRT$strlen(rArg);i++){
 		cliArg2[i+MSVCRT$strlen(binPth)+1] = rArg[i];
